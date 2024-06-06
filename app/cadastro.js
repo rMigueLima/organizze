@@ -1,8 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Pressable, Image } from 'react-native';
-import { TextInput } from 'react-native-web';
+import { StyleSheet, Text, View, Pressable, Image, TextInput } from 'react-native';
 import Cadastro from '../assets/cadastroA.png';
+import { useState } from 'react';
 export default function App({navigation}) {
+  const [email, setEmail] = useState();
+  const [senha, setSenha] = useState();
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -22,13 +24,21 @@ export default function App({navigation}) {
 
         <View style={styles.input}>
           <Text style={styles.span}>Seu email</Text>
-          <TextInput style={styles.areaDigita}/>
+          <TextInput 
+          style={styles.areaDigita}
+          onChangeText={setEmail}
+          value={email}
+          />
         </View>
         
         <View style={styles.inputs}>
           <View style={styles.input2}>
             <Text style={styles.span}>Sua senha</Text>
-            <TextInput style={styles.areaDigita}/>
+            <TextInput 
+            style={styles.areaDigita}
+            onChangeText={setSenha}
+            value={senha}
+            />
           </View>
 
         <View style={styles.input2}>
@@ -39,11 +49,13 @@ export default function App({navigation}) {
         </View>
       </View>
       <View style={styles.footer}>
-        <Pressable style={styles.irLogin} onPress={() => navigation.navigate('Login')}>
-          <View style={{ color: 'white', fontSize: 18}}>Começar a usar</View>
+        <Pressable style={styles.irLogin}>
+          <View style={{fontSize: 18}}><Text style={{color:'white'}}>Começar a usar</Text></View>
+        </Pressable>
+        <Pressable onPress={() => navigation.navigate('Login')}>
+          <Text style={{width: 300, textAlign: 'center', fontSize: 14}}>Já tem uma conta? <Text style={{color: 'green', fontWeight: 'bold'}}>Fazer Login</Text></Text>
         </Pressable>
       </View>
-      <StatusBar style="auto" />
     </View>
   );
 }
@@ -69,17 +81,19 @@ const styles = StyleSheet.create({
   },
   botaos: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 8,
     width: 300,
     borderColor: '#C0C0C0',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 8,
+    padding: 15,
   },
   body: {
-    flex: 1,
-    paddingVertical: 15,
-    gap: 15
+    flex: 1.1,
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 35
   },
   span: {
     fontWeight: 'bold',
@@ -103,19 +117,21 @@ const styles = StyleSheet.create({
   areaDigita: {
     borderWidth: 1,
     borderColor: '#C0C0C0',
-    borderRadius: 6,
-    padding: 9,
+    borderRadius: 8,
+    padding: 15,
   },
   footer: {
-    flex: 0.5,
+    flex: 0.6,
     justifyContent: 'flex-start',
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
+    gap: 15,
+    paddingVertical: 15
   },
   irLogin: {
     backgroundColor: '#32CD32',
     width: 300,
-    padding: 10,
-    borderRadius: 6,
+    padding: 15,
+    borderRadius: 8,
     alignItems: 'center'
   }
 });
