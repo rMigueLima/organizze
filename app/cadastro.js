@@ -1,10 +1,25 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Pressable, Image, TextInput } from 'react-native';
+import { create } from '../banco/sqLiteUser';
+import { all } from '../banco/sqLiteUser';
 import Cadastro from '../assets/cadastroA.png';
 import { useState } from 'react';
 export default function App({navigation}) {
+  const [nome, setNome] = useState();
   const [email, setEmail] = useState();
   const [senha, setSenha] = useState();
+  const [telefone, setTelefone] = useState();
+  const [tudo, setTudo] = useState([]);
+   const insertDados = async() => {
+    const dados = {
+      'nome':nome,
+      'email':email,
+      'senha':senha,
+      'telefone':telefone,
+      }
+    const seila = await create(dados);
+    console.log(tudo);
+    }
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -13,14 +28,20 @@ export default function App({navigation}) {
         <Text style={{color: 'gray', fontWeight: 'bold', width: 200, textAlign: 'center'}}>Crie sua conta para começar a controlar sua grana</Text>
         <View style={{marginTop: 20, gap: 15}}>
           <Pressable style={styles.botaos}>
-            <Text style={{fontWeight: 'bold'}}>Registre-se com o Facebook</Text>
-          </Pressable>
-          <Pressable style={styles.botaos}>
             <Text style={{fontWeight: 'bold'}}>Registre-se com o Google</Text>
           </Pressable>
         </View>
       </View>
       <View style={styles.body}>
+
+      <View style={styles.input}>
+          <Text style={styles.span}>Seu nome</Text>
+          <TextInput 
+          style={styles.areaDigita}
+          onChangeText={setNome}
+          value={nome}
+          />
+      </View>
 
         <View style={styles.input}>
           <Text style={styles.span}>Seu email</Text>
@@ -42,15 +63,20 @@ export default function App({navigation}) {
           </View>
 
         <View style={styles.input2}>
-          <Text style={styles.span}>Repetir senha</Text>
-          <TextInput style={styles.areaDigita}/>
+          <Text style={styles.span}>Seu Telefone</Text>
+          <TextInput 
+          style={styles.areaDigita}
+          onChangeText={setTelefone}
+          keyboardType='numeric'
+          value={telefone}
+          />
         </View>
 
         </View>
       </View>
       <View style={styles.footer}>
-        <Pressable style={styles.irLogin}>
-          <View style={{fontSize: 18}}><Text style={{color:'white'}}>Começar a usar</Text></View>
+        <Pressable style={styles.irLogin} onPress={() =>insertDados()}>
+          <View style={{fontSize: 18}}><Text style={{color:'white'}}>Criar Conta</Text></View>
         </Pressable>
         <Pressable onPress={() => navigation.navigate('Login')}>
           <Text style={{width: 300, textAlign: 'center', fontSize: 14}}>Já tem uma conta? <Text style={{color: 'green', fontWeight: 'bold'}}>Fazer Login</Text></Text>
@@ -68,7 +94,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   header: {
-    flex: 2.5,
+    flex: 2,
     justifyContent: 'center',
     alignItems: 'center',
     borderBottomWidth: 1,
@@ -89,7 +115,7 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   body: {
-    flex: 1.1,
+    flex: 2,
     paddingVertical: 20,
     alignItems: 'center',
     justifyContent: 'center',
