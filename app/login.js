@@ -1,11 +1,22 @@
-import { StyleSheet, Text, View, Pressable, Image } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Image, TextInput } from 'react-native';
 import Logo from '../assets/logo.png';
-import { TextInput } from 'react-native-gesture-handler';
 import { useState } from 'react';
-
+import { verificaDados } from '../banco/sqLiteUser';
 export default function App({navigation}) {
     const [email, setEmail] = useState();
     const [senha, setSenha] = useState();
+    let id;
+    const logar = async() => {
+        const verifica = await verificaDados(email, senha);
+        id = verifica.id;
+        if(verifica) {
+            navigation.navigate('Home', { id });
+    
+        } else {
+            console.log("Dados errados cuzao");
+        };
+    }
+ 
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -35,7 +46,7 @@ export default function App({navigation}) {
                     />
                 </View>
                 <View style={{gap: 10}}>
-                <Pressable style={styles.botao}>
+                <Pressable style={styles.botao} onPress={() =>logar()}>
                     <Text style={{color: 'white', fontWeight: 'bold', fontSize: 15}}>Continuar</Text>
                 </Pressable>
                 <Text style={{width: 300, fontWeight: 'bold', fontSize: 13, color: 'gray'}}>Ao criar sua conta você concorda com nossos <Text style={{color:'green', fontWeight: 'bold'}}>Termos de Uso e Políticas de Privacidade</Text></Text>
