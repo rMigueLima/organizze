@@ -1,6 +1,6 @@
-import { View, Text, Image, StyleSheet, Pressable, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, Image, StyleSheet, Pressable, Modal, ActivityIndicator} from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { selectById } from '../banco/sqLiteUser';
+import { all, selectById, allDespesa, createDespesa } from '../banco/sqLiteUser';
 import { createConta } from '../banco/sqLiteUser';
 import { useState, useEffect } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -14,6 +14,7 @@ import { TextInput } from 'react-native-gesture-handler';
 export default function Home({navigation}) {
     const route = useRoute();
     const id = route.params;
+    const [dateComponentEnable, setDateComponentEnable] = useState(false);
     const [load, setLoad] = useState(true);
     const [enableModal, setEnableModal] = useState(false);
     const [enableModalC, setEnableModalC] = useState(false);
@@ -22,13 +23,18 @@ export default function Home({navigation}) {
     const [nomeUser, setNomeUser] = useState();
     const [descricao, setDescricao] = useState();
     const [saldoConta, setSaldoConta] = useState(0);
-    const [data, setData] = useState();
     const [nomeConta, setNomeConta] = useState();
 
     const pega = async() => {
         const pegaDado = await selectById(id.id);
         setNomeUser(pegaDado.nome);
-        setIdC(pegaDado.id);
+        setNomeConta(pegaDado.nomeConta);
+        if(pegaDado.saldoConta === null) {
+          setSaldoConta(0)
+        } else {
+          setSaldoConta(pegaDado.saldoConta)
+        }
+        await setIdC(pegaDado.id);
         console.log(idC);        
         console.log(pegaDado);
     }
@@ -49,19 +55,35 @@ export default function Home({navigation}) {
       }
       const criaConta = async() => {
         const dadosConta = {
-          'saldo':parseInt(saldoConta),
+          'saldo':parseFloat(saldoConta),
           'idUser':idC,
         }
         console.log(dadosConta);
         const contaCriada = await createConta(dadosConta);
-        console.log(contaCriada);
+        console.log("R$"+ contaCriada.saldo+" depositado(s)");
+        
       }
-      const dadosDespesa = {
-        'desc': descricao,
-        'conta':nomeConta,
-        'data':data
+      const criaDespesa = async() => {
+
+        const dadosDespesa = {
+          'desc': descricao,
+          'valorDespesa':parseInt(despesa),
+          'data':data,
+          'idUser':idC
+        }
+        console.log(dadosDespesa);
+        // const despesa = await createDespesa(dadosDespesa);
+        // console.log(despesa);
       }
 
+      const todaDespesa = async() => {
+        const allD = await allDespesa();
+        console.log(allD);
+      }
+
+      state = {
+        data: ''
+      }
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -97,7 +119,7 @@ export default function Home({navigation}) {
                         <View style={styles.contaDesc}>
                             <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
                             <Image source={Carteira} style={styles.imgCarteira}/>
-                                <Text style={{fontWeight: 'bold', marginRight: 10}}>Conta inicial</Text>
+                                <Text style={{fontWeight: 'bold', marginRight: 10}}>{ nomeConta }</Text>
                                 <Text>{ saldoConta } R$</Text>
                             </View>
                         </View>
@@ -125,7 +147,7 @@ export default function Home({navigation}) {
                     style={styles.valorDespesa}
                     value={despesa}
                     placeholder='0,00'
-                    onChangeText={(despesa) =>setDespesa}
+                    onChangeText={setDespesa}
                     keyboardType='numeric'
                     />
                 </View>
@@ -151,6 +173,7 @@ export default function Home({navigation}) {
                         style={styles.areaDigita}
                         onChangeText={setNomeConta}
                         value={nomeConta}
+                        readOnly={true}
                         placeholder='Conta Inicial'
                         />
                         </View>
@@ -159,12 +182,13 @@ export default function Home({navigation}) {
                     <View style={styles.input}>
                         <Text style={styles.label}>Data</Text>
                         <View style={styles.areaInput}>
-                        <Ionicons name='duplicate-sharp' size={25}/>
+                          <Pressable onPress={()=>setDateComponentEnable(true)}>
+                            <Ionicons name='duplicate-sharp' size={25}/>
+                          </Pressable>
                         <TextInput
                         style={styles.areaDigita}
-                        onChangeText={setData}
-                        value={descricao}
-                        keyboardType='web-search'
+                        value={this.state.data}
+                        readOnly={true}
                         placeholder='Hoje'
                         />
                         </View>
@@ -172,7 +196,7 @@ export default function Home({navigation}) {
 
                 </View>
             </View>
-            <Pressable style={styles.confirmarDespesa} onPress={()=> setEnableModal(false)}>
+            <Pressable style={styles.confirmarDespesa} onPress={()=> criaDespesa()}>
                 <Ionicons name='checkmark' size={45}/>
             </Pressable>
             <Pressable style={styles.fechaModal} onPress={()=> setEnableModal(false)}>
@@ -214,6 +238,7 @@ export default function Home({navigation}) {
           </View>
         </View>
         </Modal>
+
         </View>
     );
 }
@@ -227,6 +252,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+      },
+      dateComponent:{
+        width: 350,
+        position: 'absolute'
       },
       header: {
         paddingTop: 10,

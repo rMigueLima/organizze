@@ -15,6 +15,7 @@ export default function App({navigation}) {
       'email':email,
       'senha':senha,
       'telefone':telefone,
+      'nomeConta':"Conta Inicial"
       }
     
     const criar = await create(dados);
