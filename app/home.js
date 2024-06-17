@@ -1,6 +1,7 @@
 import { View, Text, Image, StyleSheet, Pressable, Modal, ActivityIndicator} from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { all, selectById, allDespesa, createDespesa } from '../banco/sqLiteUser';
+import { selectById, allDespesa, createDespesa } from '../banco/sqLiteUser';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { createConta } from '../banco/sqLiteUser';
 import { useState, useEffect } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -14,16 +15,32 @@ import { TextInput } from 'react-native-gesture-handler';
 export default function Home({navigation}) {
     const route = useRoute();
     const id = route.params;
-    const [dateComponentEnable, setDateComponentEnable] = useState(false);
     const [load, setLoad] = useState(true);
+    const [data, setData] = useState(new Date());
+    const [showData, setShowData] = useState(true);
+    const [mode, setMode] = useState('date');
     const [enableModal, setEnableModal] = useState(false);
     const [enableModalC, setEnableModalC] = useState(false);
-    const [despesa, setDespesa] = useState();
     const [idC, setIdC] = useState();
     const [nomeUser, setNomeUser] = useState();
+    const [despesa, setDespesa] = useState();
     const [descricao, setDescricao] = useState();
     const [saldoConta, setSaldoConta] = useState(0);
     const [nomeConta, setNomeConta] = useState();
+
+
+    const onChange = async(e, selectedDate) => { 
+      //funcao para fechar o date time picker e pegar a data selecionada
+      setData(selectedDate);
+    } 
+
+    const showMode = async(modeToShow) => {
+      //funcao para abrir o date time picker e exibir o tipo de date picker que aparecera,
+      //como data ou date, que é a hora ou calendario
+      setShowData(true);
+      setMode(modeToShow);
+    }
+
 
     const pega = async() => {
         const pegaDado = await selectById(id.id);
@@ -60,29 +77,25 @@ export default function Home({navigation}) {
         }
         console.log(dadosConta);
         const contaCriada = await createConta(dadosConta);
-        console.log("R$"+ contaCriada.saldo+" depositado(s)");
+        console.log("R$"+ contaCriada.saldoConta+" depositado(s)");
         
       }
       const criaDespesa = async() => {
 
         const dadosDespesa = {
           'desc': descricao,
-          'valorDespesa':parseInt(despesa),
+          'valorDespesa':parseFloat(despesa),
           'data':data,
           'idUser':idC
         }
-        console.log(dadosDespesa);
-        // const despesa = await createDespesa(dadosDespesa);
-        // console.log(despesa);
+        const despesaCriada = await createDespesa(dadosDespesa);
+        const allD = await allDespesa();
+        console.log(allD);
       }
 
       const todaDespesa = async() => {
         const allD = await allDespesa();
         console.log(allD);
-      }
-
-      state = {
-        data: ''
       }
     return (
         <View style={styles.container}>
@@ -145,10 +158,10 @@ export default function Home({navigation}) {
                     <Text style={{fontSize: 35, fontWeight: 'bold', color: 'white'}}>R$</Text>
                     <TextInput
                     style={styles.valorDespesa}
-                    value={despesa}
-                    placeholder='0,00'
+                    placeholder='0'
                     onChangeText={setDespesa}
-                    keyboardType='numeric'
+                    value={despesa}
+                    keyboardType='numbers-and-punctuation'
                     />
                 </View>
                 <View style={styles.descs}>
@@ -182,15 +195,21 @@ export default function Home({navigation}) {
                     <View style={styles.input}>
                         <Text style={styles.label}>Data</Text>
                         <View style={styles.areaInput}>
-                          <Pressable onPress={()=>setDateComponentEnable(true)}>
-                            <Ionicons name='duplicate-sharp' size={25}/>
+                          <Pressable onPress={()=> showMode("date")} 
+                          style={{flexDirection: 'row', alignItems: 'center', gap: 25}}>
+                            <Ionicons name='calendar-outline' size={25}/>
+                          {
+                            showData &&(
+                              <DateTimePicker
+                              value={data}
+                              mode={mode}
+                              is24Hour={true}
+                              onChange={()=>onChange}
+                              />
+                            )
+                          }
+                          {/* <Text style={{fontWeight: 'bold', color: 'white'}}>{data.toLocaleString()}</Text> */}
                           </Pressable>
-                        <TextInput
-                        style={styles.areaDigita}
-                        value={this.state.data}
-                        readOnly={true}
-                        placeholder='Hoje'
-                        />
                         </View>
                     </View>
 

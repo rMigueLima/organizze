@@ -14,10 +14,11 @@ db.transaction((tx) => {
     tx.executeSql(
       'CREATE TABLE IF NOT EXISTS tbdespesa('+
       'id INTEGER PRIMARY KEY AUTOINCREMENT,' +
-      'desc TEXT,' +
+      'desc TEXT NOT NULL,' +
       'valor FLOAT NOT NULL,' +
-      'data DATE NOT NULL,' +
-      'idUser INTEGER REFERENCES tbuser(id)'+');'
+      'data TEXT NOT NULL,' +
+      'idUser INTEGER,' +
+      'FOREIGN KEY (idUser) REFERENCES tbuser(id)'+');'
 
   );
 });
@@ -26,26 +27,16 @@ export const createDespesa = (obj) => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
       tx.executeSql(
-        "INSERT INTO tbdespesa (desc, valor, data, idUser) VALUES(?, ?, ?, ?);",
-        [obj.desc, obj.despesa, obj.data, obj.idUser]
-      )
+        "INSERT INTO tbdespesa(desc, valor, data, idUser) VALUES (?, ?, ?, ?);",
+        [obj.desc, obj.despesa, obj.data, obj.idUser],
+
+        (_, { rows }) => resolve(rows._array),
+         (_, error) => reject(error) // erro interno em tx.executeSql
+      );
     })
   })
 }
 
-
-export const allDespesa = () => {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx)=>{
-      tx.executeSql(
-        "SELECT * FROM tbdespesa",
-        [],
-        (_, { rows }) => resolve(rows._array),
-        (_, error) => reject(error) // erro interno em tx.executeSql
-      );
-    });
-  });
-};
 
 
 export const createConta = (obj) => {
@@ -63,6 +54,21 @@ export const createConta = (obj) => {
     });
   };
 
+  export const allDespesa = async() => {
+    return new Promise((resolve, reject) => {
+      db.transaction((tx) => {
+        //comando SQL modificável
+        tx.executeSql(
+          "SELECT * FROM tbdespesa;",
+          [],
+  
+          (_, { rows }) => resolve(rows._array),
+          (_, error) => reject(error) // erro interno em tx.executeSql
+        );
+        
+      });
+    });
+  };
 export const create = (obj) => {
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {

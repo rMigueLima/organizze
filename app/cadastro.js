@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Pressable, Image, TextInput } from 'react-native';
-import { create } from '../banco/sqLiteUser';
+import { all,create } from '../banco/sqLiteUser';
 import Cadastro from '../assets/cadastroA.png';
 import { useState } from 'react';
 export default function App({navigation}) {
@@ -24,6 +24,8 @@ export default function App({navigation}) {
     if(!criar) {
 
     } else {
+      const tudo = await all();
+      console.log(tudo);
       navigation.navigate('Login',{ id })
     }
     
