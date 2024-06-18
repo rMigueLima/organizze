@@ -1,6 +1,6 @@
 import { View, Text, Image, StyleSheet, Pressable, Modal, ActivityIndicator} from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { selectById, allDespesa, createDespesa } from '../banco/sqLiteUser';
+import { selectById, allDespesa, createDespesa, all } from '../banco/sqLiteUser';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { createConta } from '../banco/sqLiteUser';
 import { useState, useEffect } from 'react';
@@ -12,6 +12,7 @@ import Casa from '../assets/casa.png';
 import Add from '../assets/add.png';
 import Historic from '../assets/historic.png';
 import { TextInput } from 'react-native-gesture-handler';
+
 export default function Home({navigation}) {
     const route = useRoute();
     const id = route.params;
@@ -25,16 +26,16 @@ export default function Home({navigation}) {
     const [nomeUser, setNomeUser] = useState();
     const [despesa, setDespesa] = useState();
     const [descricao, setDescricao] = useState();
-    const [saldoConta, setSaldoConta] = useState(0);
+    const [saldoConta, setSaldoConta] = useState();
     const [nomeConta, setNomeConta] = useState();
 
 
-    const onChange = async(e, selectedDate) => { 
+    const onChange = (e, selectedDate) => { 
       //funcao para fechar o date time picker e pegar a data selecionada
       setData(selectedDate);
     } 
 
-    const showMode = async(modeToShow) => {
+    const showMode = (modeToShow) => {
       //funcao para abrir o date time picker e exibir o tipo de date picker que aparecera,
       //como data ou date, que é a hora ou calendario
       setShowData(true);
@@ -63,6 +64,7 @@ export default function Home({navigation}) {
         }, 1000);
       });
 
+
       if(load) {
         return <ActivityIndicator
         style={styles.loading}
@@ -71,31 +73,46 @@ export default function Home({navigation}) {
         />
       }
       const criaConta = async() => {
+        let saldoNovo = Number(saldoConta).toFixed(2)
         const dadosConta = {
-          'saldo':parseFloat(saldoConta),
-          'idUser':idC,
+          'saldo': saldoNovo,
+          'idUser': idC,
         }
         console.log(dadosConta);
         const contaCriada = await createConta(dadosConta);
-        console.log("R$"+ contaCriada.saldoConta+" depositado(s)");
+        if(contaCriada != undefined) {
+          setEnableModalC(false)
+          setSaldoConta(saldoNovo)
+        }
         
       }
       const criaDespesa = async() => {
+        var valorTotal =0;
+        dia  = data.getDate().toString(),
+        diaF = (dia.length == 1) ? '0'+dia : dia,
+        mes  = (data.getMonth()+1).toString(), //+1 pois no getMonth Janeiro começa com zero.
+        mesF = (mes.length == 1) ? '0'+mes : mes,
+        anoF = data.getFullYear();
 
-        const dadosDespesa = {
-          'desc': descricao,
-          'valorDespesa':parseFloat(despesa),
-          'data':data,
-          'idUser':idC
-        }
-        const despesaCriada = await createDespesa(dadosDespesa);
-        const allD = await allDespesa();
-        console.log(allD);
-      }
+        let trataData = anoF+"-"+mesF+"-"+diaF;
 
-      const todaDespesa = async() => {
-        const allD = await allDespesa();
-        console.log(allD);
+          let newDespesa = Number(despesa).toFixed(2);
+          const dadosDespesa = {
+            'desc': descricao,
+            'valorDespesa':newDespesa,
+            'data':trataData,
+            'idUser':idC
+          }
+         console.log(dadosDespesa);
+         const despesaCriada = await createDespesa(dadosDespesa);
+         const allD = await allDespesa(idC);
+         console.log(allD);
+         for(var i=0;i<allD.length;i++) {
+          valorTotal = valorTotal + allD[i].valor;
+         }
+         console.log(valorTotal);
+         setSaldoConta(saldoConta - valorTotal);
+         
       }
     return (
         <View style={styles.container}>
@@ -195,7 +212,7 @@ export default function Home({navigation}) {
                     <View style={styles.input}>
                         <Text style={styles.label}>Data</Text>
                         <View style={styles.areaInput}>
-                          <Pressable onPress={()=> showMode("date")} 
+                          <Pressable 
                           style={{flexDirection: 'row', alignItems: 'center', gap: 25}}>
                             <Ionicons name='calendar-outline' size={25}/>
                           {
@@ -204,11 +221,10 @@ export default function Home({navigation}) {
                               value={data}
                               mode={mode}
                               is24Hour={true}
-                              onChange={()=>onChange}
+                              onChange={onChange}
                               />
                             )
                           }
-                          {/* <Text style={{fontWeight: 'bold', color: 'white'}}>{data.toLocaleString()}</Text> */}
                           </Pressable>
                         </View>
                     </View>

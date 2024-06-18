@@ -6,61 +6,57 @@ import db from "./SQLiteDatabase";
  */
 db.transaction((tx) => {
   //<<<<<<<<<<<<<<<<<<<<<<<< USE ISSO APENAS DURANTE OS TESTES!!! >>>>>>>>>>>>>>>>>>>>>>>
-// tx.executeSql("DROP TABLE tbuser;");
+  // tx.executeSql("DROP TABLE tbuser;");
  //<<<<<<<<<<<<<<<<<<<<<<<< USE ISSO APENAS DURANTE OS TESTES!!! >>>>>>>>>>>>>>>>>>>>>>>
     tx.executeSql(
-     "CREATE TABLE IF NOT EXISTS tbuser(id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, email TEXT NOT NULL UNIQUE, senha TEXT NOT NULL, telefone INT NOT NULL, nomeConta TEXT, saldoConta FLOAT);",
+     "CREATE TABLE IF NOT EXISTS tbuser(id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, email TEXT UNIQUE NOT NULL, senha TEXT NOT NULL, telefone INT NOT NULL, nomeConta TEXT, saldoConta DECIMAL);",
    );
     tx.executeSql(
-      'CREATE TABLE IF NOT EXISTS tbdespesa('+
-      'id INTEGER PRIMARY KEY AUTOINCREMENT,' +
-      'desc TEXT NOT NULL,' +
-      'valor FLOAT NOT NULL,' +
-      'data TEXT NOT NULL,' +
-      'idUser INTEGER,' +
-      'FOREIGN KEY (idUser) REFERENCES tbuser(id)'+');'
-
+      "CREATE TABLE IF NOT EXISTS tbdespesa(id INTEGER PRIMARY KEY AUTOINCREMENT, desc TEXT NOT NULL, valor DECIMAL NOT NULL, data DATE NOT NULL, idUser INT);"
   );
 });
 
 export const createDespesa = (obj) => {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "INSERT INTO tbdespesa(desc, valor, data, idUser) VALUES (?, ?, ?, ?);",
-        [obj.desc, obj.despesa, obj.data, obj.idUser],
-
-        (_, { rows }) => resolve(rows._array),
-         (_, error) => reject(error) // erro interno em tx.executeSql
-      );
+  if(obj.valorDespesa === "NaN" || obj.valorDespesa === null || obj.valorDespesa === undefined) {
+    console.log("numero desconhecido");
+  } else {
+    return new Promise((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          "INSERT INTO tbdespesa(desc, valor, data, idUser) VALUES (?, ?, ?, ?);",
+          [obj.desc, obj.valorDespesa, obj.data ,obj.idUser],
+  
+          (_, { rows }) => resolve(rows._array),
+           (_, error) => reject(error) // erro interno em tx.executeSql
+        );
+      })
     })
-  })
+  }
 }
 
 
 
 export const createConta = (obj) => {
-  console.log(obj.idUser+" cuzinho");
     return new Promise((resolve, reject) => {
       db.transaction((tx)=> {
         tx.executeSql(
           "UPDATE tbuser SET saldoConta = ? WHERE id = ?;",
           [obj.saldo, obj.idUser],
   
-          (_, { rows }) => resolve(rows._array),
-         (_, error) => reject(error) // erro interno em tx.executeSql
+          (_, { rows }) => resolve(rows._array),//pego uma linha so cuzao
+          (_, error) => reject(error) //erro interno em tx.executeSql
       );
       });
     });
   };
 
-  export const allDespesa = async() => {
+  export const allDespesa = async(id) => {
     return new Promise((resolve, reject) => {
       db.transaction((tx) => {
         //comando SQL modificável
         tx.executeSql(
-          "SELECT * FROM tbdespesa;",
-          [],
+          "SELECT * FROM tbdespesa WHERE idUser = ? ORDER BY data DESC;",
+          [id],
   
           (_, { rows }) => resolve(rows._array),
           (_, error) => reject(error) // erro interno em tx.executeSql
