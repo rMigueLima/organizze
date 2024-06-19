@@ -28,7 +28,7 @@ export default function Home({navigation}) {
     const [descricao, setDescricao] = useState();
     const [saldoConta, setSaldoConta] = useState();
     const [nomeConta, setNomeConta] = useState();
-
+    var despesaMenos = 0;
 
     const onChange = (e, selectedDate) => { 
       //funcao para fechar o date time picker e pegar a data selecionada
@@ -58,9 +58,9 @@ export default function Home({navigation}) {
     }
 
     useEffect(() =>{
-      pega()
         setTimeout(() => {
           setLoad(false)
+          pega()
         }, 1000);
       });
 
@@ -73,7 +73,8 @@ export default function Home({navigation}) {
         />
       }
       const criaConta = async() => {
-        let saldoNovo = Number(saldoConta).toFixed(2)
+        let saldoNovo = Number(saldoConta)
+        console.log(saldoConta);
         const dadosConta = {
           'saldo': saldoNovo,
           'idUser': idC,
@@ -82,12 +83,11 @@ export default function Home({navigation}) {
         const contaCriada = await createConta(dadosConta);
         if(contaCriada != undefined) {
           setEnableModalC(false)
-          setSaldoConta(saldoNovo)
+         setSaldoConta(saldoNovo)
         }
         
       }
       const criaDespesa = async() => {
-        var valorTotal =0;
         dia  = data.getDate().toString(),
         diaF = (dia.length == 1) ? '0'+dia : dia,
         mes  = (data.getMonth()+1).toString(), //+1 pois no getMonth Janeiro começa com zero.
@@ -106,13 +106,12 @@ export default function Home({navigation}) {
          console.log(dadosDespesa);
          const despesaCriada = await createDespesa(dadosDespesa);
          const allD = await allDespesa(idC);
-         console.log(allD);
+         var valorTotal =0;
          for(var i=0;i<allD.length;i++) {
           valorTotal = valorTotal + allD[i].valor;
          }
-         console.log(valorTotal);
-         setSaldoConta(saldoConta - valorTotal);
-         
+         await setSaldoConta(saldoConta - newDespesa);
+         setEnableModal(false)
       }
     return (
         <View style={styles.container}>
@@ -162,7 +161,7 @@ export default function Home({navigation}) {
             <View style={styles.footer}>
                 <Pressable onPress={navigation.navigate('Home')}><Image style={styles.icons} source={Casa}/></Pressable>
                 <Pressable onPress={()=>setEnableModal(true)} style={styles.iconsA}><Image style={styles.icons2} source={Add}/></Pressable>
-                <Pressable onPress={navigation.navigate('Home')}><Image style={styles.icons} source={Historic}/></Pressable>
+                <Pressable onPress={()=>navigation.navigate('Historico', { idC })}><Image style={styles.icons} source={Historic}/></Pressable>
             </View>
 
             <Modal

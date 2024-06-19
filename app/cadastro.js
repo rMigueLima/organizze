@@ -49,6 +49,7 @@ export default function App({navigation}) {
           <TextInput 
           style={styles.areaDigita}
           onChangeText={setNome}
+          maxLength={50}
           value={nome}
           />
       </View>
@@ -58,6 +59,7 @@ export default function App({navigation}) {
           <TextInput 
           style={styles.areaDigita}
           onChangeText={setEmail}
+          maxLength={50}
           value={email}
           />
         </View>
@@ -68,6 +70,7 @@ export default function App({navigation}) {
             <TextInput 
             style={styles.areaDigita}
             onChangeText={setSenha}
+            maxLength={10}
             value={senha}
             />
           </View>
@@ -77,6 +80,7 @@ export default function App({navigation}) {
           <TextInput 
           style={styles.areaDigita}
           onChangeText={setTelefone}
+          maxLength={11}
           keyboardType='numeric'
           value={telefone}
           />
